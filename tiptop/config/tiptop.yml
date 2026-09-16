@@ -2,11 +2,11 @@
 
 # == Robot connection and control ==
 robot:
-  type: fr3_robotiq
+  type: panda
   dof: 7
 
   # IP address or hostname of the workstation running the Bamboo controller (directly networked to robot)
-  host: "your-ip-address"
+  host: "128.30.27.224"
 
   # Bamboo robot and gripper control port. You don't need to change these unless you used custom ports
   port: 5555
@@ -20,7 +20,7 @@ robot:
 
   # Robot configurations
   q_home: [0.0, -0.628, 0.0, -2.513, 0.0, 1.885, 0.0]
-  q_capture: [-0.034, 0.090, 0.080, -1.319, -0.003, 1.253, 0.030]
+  q_capture: [0.09182040738001353, -1.7596653633613568, -0.07610120523668563, -2.989139779475697, -0.03324042674962227, 2.0085827458795786, 0.7514896069202158]
 
 # == Camera configurations ==
 # Supported types: zed, realsense
@@ -31,18 +31,13 @@ robot:
 cameras:
   # TiPToP only uses the hand camera for perception
   hand:
-    serial: "hand-serial"
-    type: zed
+    serial: "128422271719"
+    type: realsense
 
   # External camera is optional but helpful for recording execution and scene visualization script (viz-scene)
   external:
-    serial: "external-serial"
-    type: zed
-    resolution: HD1080
-    fps: 30
-
-# == Perception services ==
-# No need to change these unless you're running them on a remote machine or changed the ports
+    serial: "127122270412"
+    type: realsense
 perception:
   foundation_stereo:
     url: "http://localhost:1234"
@@ -51,7 +46,7 @@ perception:
     url: "http://localhost:8123"
     # Set to false when world coordinate frame differs from the robot base link frame
     apply_bounds: true
-  
+
   sam:
     mode: "local"
 

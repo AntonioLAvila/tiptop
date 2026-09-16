@@ -84,8 +84,7 @@ def viz_calibration(rr_spawn: bool = True, viz_freq: float = 5.0, max_time: floa
 
             depth_m = frame.depth.copy()
             depth_m[depth_m > 5.0] = 0.0
-            K = cam.intrinsics_matrix
-            xyz_map = depth_to_xyz(depth_m, K)
+            xyz_map = depth_to_xyz(depth_m, frame.intrinsics)
 
             # Convert point cloud to world frame using camera transform
             xyz_hom = np.ones((xyz_map.shape[0], xyz_map.shape[1], 4))

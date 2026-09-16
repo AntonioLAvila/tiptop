@@ -24,12 +24,12 @@ from tiptop.utils import get_robot_client, setup_logging
 from tiptop.workspace import workspace_cuboids
 
 # Charuco Board Params #
-CHARUCOBOARD_ROWCOUNT = SQUARES_Y = 9
-CHARUCOBOARD_COLCOUNT = SQUARES_X = 14
+CHARUCOBOARD_ROWCOUNT = SQUARES_Y = 8
+CHARUCOBOARD_COLCOUNT = SQUARES_X = 11
 CHARUCOBOARD_CHECKER_SIZE = 0.020
 # CHARUCOBOARD_MARKER_SIZE = 0.016
 CHARUCOBOARD_MARKER_SIZE = 0.015
-ARUCO_DICT = aruco.getPredefinedDictionary(aruco.DICT_5X5_100)
+ARUCO_DICT = aruco.getPredefinedDictionary(aruco.DICT_4X4_100)
 
 # Create Board #
 CHARUCO_BOARD = aruco.CharucoBoard(

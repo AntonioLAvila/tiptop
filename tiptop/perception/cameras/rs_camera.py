@@ -20,7 +20,7 @@ class RealsenseFrame(Frame):
 
     ir_left: UInt8[np.ndarray, "h w"] | None = None  # IR left uint8
     ir_right: UInt8[np.ndarray, "h w"] | None = None  # IR right uint8
-    depth_raw: UInt16[np.ndarray, "h w"] | None = None  # Raw depth uint16 millimeters
+    depth_raw: UInt16[np.ndarray, "h w"] | None = None  # Raw depth uint16 in device units (see depth_scale)
 
 
 @dataclass(frozen=True)
@@ -74,6 +74,7 @@ class RealsenseCamera:
         # Get camera serial number
         device = self._profile.get_device()
         self.serial = device.get_info(rs.camera_info.serial_number)
+        self.depth_scale = device.first_depth_sensor().get_depth_scale()  # Meters per raw depth unit
 
         # Cache the intrinsics call
         self.get_intrinsics()
@@ -157,11 +158,11 @@ class RealsenseCamera:
             depth_frame = frames.get_depth_frame()
             depth_raw = np.asanyarray(depth_frame.get_data())
 
-            # Get aligned depth and convert mm to m
+            # Get aligned depth and convert to meters
             align = rs.align(rs.stream.color)
             aligned_frames = align.process(frames)
             aligned_depth_frame = aligned_frames.get_depth_frame()
-            depth_float = (np.asanyarray(aligned_depth_frame.get_data()) / 1000.0).astype(np.float32)
+            depth_float = (np.asanyarray(aligned_depth_frame.get_data()) * self.depth_scale).astype(np.float32)
 
         intrinsics = self.get_intrinsics()
         return RealsenseFrame(
