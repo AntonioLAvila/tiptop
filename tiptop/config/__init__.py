@@ -39,9 +39,9 @@ def set_tiptop_cfg_from_file(cfg_path: Path, fill_missing: bool = False) -> Dict
 
 
 def tiptop_cfg() -> DictConfig:
-    """Return the cached TiPToP config, loading the default config file on first call."""
+    """Return the cached TiPToP config, loading $TIPTOP_CONFIG or the default config file on first call."""
     if _cached_cfg is None:
-        return set_tiptop_cfg_from_file(default_cfg_path)
+        return set_tiptop_cfg_from_file(Path(os.environ.get("TIPTOP_CONFIG", default_cfg_path)))
     return _cached_cfg
 
 

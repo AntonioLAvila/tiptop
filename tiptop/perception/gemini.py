@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from functools import cache
 from pathlib import Path
 
@@ -12,6 +13,8 @@ from tiptop.config import tiptop_cfg
 _log = logging.getLogger(__name__)
 
 _PROMPTS_DIR = Path(__file__).parent / "prompts"
+
+DEFAULT_MODEL_ID = os.environ.get("TIPTOP_GEMINI_MODEL", "gemini-robotics-er-2-preview")
 
 
 @cache
@@ -66,7 +69,7 @@ def detect_and_translate(
     image: Image.Image,
     task_instruction: str,
     client: genai.Client | None = None,
-    model_id: str = "gemini-robotics-er-2-preview",
+    model_id: str = DEFAULT_MODEL_ID,
     temperature: float | None = None,
 ) -> tuple[list[dict], list[dict]]:
     """Detect objects and translate task in a single Gemini API call.
@@ -99,7 +102,7 @@ async def detect_and_translate_async(
     image: Image.Image,
     task_instruction: str,
     client: genai.Client | None = None,
-    model_id: str = "gemini-robotics-er-2-preview",
+    model_id: str = DEFAULT_MODEL_ID,
     temperature: float | None = None,
 ) -> tuple[list[dict], list[dict]]:
     """Asynchronously detect objects and translate task in a single Gemini API call.

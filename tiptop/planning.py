@@ -40,6 +40,10 @@ def load_tiptop_plan(path: Path) -> dict:
     return plan
 
 
+# tiptop robot types whose cuTAMP embodiment has a different name
+_CUTAMP_ROBOT_NAMES = {"fr3": "fr3_franka"}
+
+
 def build_tamp_config(
     num_particles: int,
     max_planning_time: float,
@@ -61,7 +65,7 @@ def build_tamp_config(
         num_opt_steps=opt_steps,
         m2t2_grasps=True,
         prop_satisfying_break=0.1,
-        robot=robot_type,
+        robot=_CUTAMP_ROBOT_NAMES.get(robot_type, robot_type),
         curobo_plan=True,
         max_motion_refine_attempts=32,
         warmup_ik=False,
