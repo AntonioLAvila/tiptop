@@ -6,7 +6,7 @@ robot:
   dof: 7
 
   # IP address or hostname of the workstation running the Bamboo controller (directly networked to robot)
-  host: "128.30.27.224"
+  host: "128.30.24.62"
 
   # Bamboo robot and gripper control port. You don't need to change these unless you used custom ports
   port: 5555
