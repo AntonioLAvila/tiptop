@@ -17,7 +17,7 @@ _log = logging.getLogger(__name__)
 @cache
 def m2t2_to_tiptop_transform():
     """4x4 transform to take M2T2 grasp poses to the convention expected by tiptop."""
-    # Panda offset
+    # M2T2 predicts poses in the panda_hand frame; 0.1034 is the TCP offset it assumes
     base_to_tcp = np.eye(4)
     base_to_tcp[2, 3] = 0.1034
 
