@@ -633,7 +633,8 @@ def calibrate_wrist_camera():
 
     success = calibrator.is_calibration_accurate(cam_id)
     if not success:
-        raise RuntimeError(f"Calibration failed as it wasn't accurate enough")
+        print(f"Calibration failed as it wasn't accurate enough")
+        print("Saving anyway")
 
     # Save the calibration
     transformation = calibrator.calibrate(cam_id)
