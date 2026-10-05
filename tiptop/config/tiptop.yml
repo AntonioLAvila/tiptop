@@ -31,8 +31,8 @@ robot:
 cameras:
   # TiPToP only uses the hand camera for perception
   hand:
-    serial: "128422271719"
-    type: realsense
+    serial: "16737879"
+    type: zed
 
   # External camera is optional but helpful for recording execution and scene visualization script (viz-scene)
   external:
