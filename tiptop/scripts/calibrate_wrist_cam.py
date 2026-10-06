@@ -84,7 +84,7 @@ def change_pose_frame(pose, frame, degrees=False):
     return result
 
 
-def calibration_traj(t, pos_scale=0.1, angle_scale=0.2, hand_camera=False):
+def calibration_traj(t, pos_scale=0.1, angle_scale=0.4, hand_camera=False):
     x = -np.abs(np.sin(3 * t)) * pos_scale
     y = -0.8 * np.sin(2 * t) * pos_scale
     z = 0.5 * np.sin(4 * t) * pos_scale
