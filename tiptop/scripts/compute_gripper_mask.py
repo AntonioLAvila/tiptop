@@ -1,14 +1,14 @@
-"""Compute gripper mask using Gemini detection + SAM segmentation."""
+"""Compute gripper mask using Claude detection + SAM segmentation."""
 
 import logging
 
 import cv2
 import numpy as np
-from tiptop.perception.gemini import gemini_client, load_json
 from PIL import Image
 from scipy.ndimage import binary_dilation, binary_fill_holes
 
 from tiptop.perception.cameras import get_hand_camera
+from tiptop.perception.claude import DEFAULT_MODEL_ID, load_json, query_image
 from tiptop.perception.sam2 import sam2_segment_objects
 from tiptop.utils import gripper_mask_path, setup_logging
 
@@ -16,19 +16,19 @@ _log = logging.getLogger(__name__)
 
 _prompt = """
 Detect the robot gripper in the image. Include the whole left and right gripper fingers and gripper body in a single 
-detection. Return bounding boxes as a JSON array with labels. Never return masks or code fencing. Limit to 1 object, 
+detection. Return only a JSON array of bounding boxes with labels, with no code fencing and no other text. Never return masks. Limit to 1 object, 
 which is the gripper.
 
 The format should be as follows: [{"box_2d": [ymin, xmin, ymax, xmax], "label": <label for the object>}] normalized to 
 0-1000. The values in box_2d must only be integers""".strip()
 
 
-def compute_gripper_mask(gemini_model: str = "gemini-robotics-er-2-preview", dilation_iters: int = 8):
+def compute_gripper_mask(model_id: str = DEFAULT_MODEL_ID, dilation_iters: int = 8):
     """
-    Compute gripper mask using Gemini detection and SAM segmentation.
+    Compute gripper mask using Claude detection and SAM segmentation.
 
     Args:
-        gemini_model: Gemini model to use for gripper detection.
+        model_id: Claude model to use for gripper detection.
         dilation_iters: Number of binary dilation iterations to apply to the mask.
     """
     setup_logging()
@@ -39,10 +39,8 @@ def compute_gripper_mask(gemini_model: str = "gemini-robotics-er-2-preview", dil
     rgb = frame.rgb
     rgb_pil = Image.fromarray(rgb)
 
-    # Query Gemini to get gripper bounding box
-    client = gemini_client()
-    response = client.models.generate_content(model=gemini_model, contents=[rgb_pil, _prompt])
-    bboxes: list = load_json(response.text)
+    # Query Claude to get gripper bounding box
+    bboxes: list = load_json(query_image(rgb_pil, _prompt, model_id=model_id))
     if len(bboxes) == 0:
         raise RuntimeError("No gripper detected! Try adjusting the camera view or prompt.")
     elif len(bboxes) > 1:

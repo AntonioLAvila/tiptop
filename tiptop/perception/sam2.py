@@ -9,8 +9,8 @@ from functools import cache
 import numpy as np
 import requests
 import torch.cuda
-from PIL import Image
 from jaxtyping import Float
+from PIL import Image
 from tqdm import tqdm
 
 from tiptop.config import tiptop_cfg
@@ -87,10 +87,9 @@ def _segment_remote(image: Image.Image, boxes: np.ndarray, server_url: str) -> t
         response.raise_for_status()
         result = response.json()
 
-        masks = np.array([
-            [np.load(io.BytesIO(base64.b64decode(m))) for m in mask_batch]
-            for mask_batch in result["masks"]
-        ])
+        masks = np.array(
+            [[np.load(io.BytesIO(base64.b64decode(m))) for m in mask_batch] for mask_batch in result["masks"]]
+        )
         return masks, np.array(result["scores"])
 
     except Exception as e:
@@ -121,11 +120,11 @@ def sam2_segment_objects(
     rgb_pil: Image.Image,
     detection_results: list[dict],
 ) -> Float[np.ndarray, "n 1 h w"]:
-    """Segment detection results from Gemini with SAM2.
+    """Segment detection results from Claude with SAM2.
 
     Args:
         rgb_pil: PIL Image to segment.
-        detection_results: List of detection dicts from Gemini, each with a 'box_2d' key
+        detection_results: List of detection dicts from Claude, each with a 'box_2d' key
                            in [ymin, xmin, ymax, xmax] format normalized to 0-1000.
 
     Returns:
@@ -134,19 +133,21 @@ def sam2_segment_objects(
     cfg = tiptop_cfg()
     mode = cfg.perception.sam.mode
 
-    # Convert Gemini bbox format [ymin, xmin, ymax, xmax] (0-1000) to SAM2 [x0, y0, x1, y1] (pixels)
+    # Convert VLM bbox format [ymin, xmin, ymax, xmax] (0-1000) to SAM2 [x0, y0, x1, y1] (pixels)
     img_height, img_width = rgb_pil.height, rgb_pil.width
-    boxes = np.array([
+    boxes = np.array(
         [
-            (xmin / 1000.0) * img_width,
-            (ymin / 1000.0) * img_height,
-            (xmax / 1000.0) * img_width,
-            (ymax / 1000.0) * img_height,
+            [
+                (xmin / 1000.0) * img_width,
+                (ymin / 1000.0) * img_height,
+                (xmax / 1000.0) * img_width,
+                (ymax / 1000.0) * img_height,
+            ]
+            for detection in detection_results
+            if len(box_2d := detection.get("box_2d", [])) == 4
+            for ymin, xmin, ymax, xmax in [box_2d]
         ]
-        for detection in detection_results
-        if len(box_2d := detection.get("box_2d", [])) == 4
-        for ymin, xmin, ymax, xmax in [box_2d]
-    ])
+    )
 
     _log.info(f"Segmenting {len(boxes)} objects using SAM2 in {mode} mode")
     if mode == "local":

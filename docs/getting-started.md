@@ -75,18 +75,18 @@ viz-gripper-cam  # Press 'q' to exit
 
 See [Troubleshooting](#troubleshooting) to debug any problems you may have.
 
-## Setup Gemini API Key
+## Setup OpenRouter API Key
 
 ```{important}
-TiPToP requires a Gemini API key for vision-language tasks including object detection, task parsing, and gripper detection. You must set this up before running calibration or demos.
+TiPToP calls Claude through OpenRouter for vision-language tasks including object detection, task parsing, and gripper detection. You must set this up before running calibration or demos.
 ```
 
-Generate an API key following the instructions at [https://ai.google.dev/gemini-api/docs/api-key](https://ai.google.dev/gemini-api/docs/api-key).
+Generate an API key at [https://openrouter.ai/keys](https://openrouter.ai/keys).
 
-Set the `GOOGLE_API_KEY` environment variable:
+Set the `OPEN_ROUTER_API_KEY` environment variable:
 
 ```bash
-export GOOGLE_API_KEY=<your-key>
+export OPEN_ROUTER_API_KEY=<your-key>
 ```
 
 ```{hint}
@@ -196,7 +196,7 @@ You should re-calibrate the camera if it has been knocked by any objects or obst
 
 ### Compute the gripper mask
 
-We compute a gripper mask to remove any depth predictions of the gripper from the projected point cloud. Note this uses Gemini to detect the gripper, so make sure you set up your API key following the instructions earlier. Run:
+We compute a gripper mask to remove any depth predictions of the gripper from the projected point cloud. Note this uses Claude to detect the gripper, so make sure you set up your API key following the instructions earlier. Run:
 
 ```bash
 compute-gripper-mask

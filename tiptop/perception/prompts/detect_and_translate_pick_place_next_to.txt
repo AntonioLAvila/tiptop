@@ -7,7 +7,7 @@ Detect and return bounding boxes for objects in the image.
 - Limit to 25 objects
 - If an object appears multiple times, name them by unique characteristics (color, size, position, etc.). If they seem the same, then just use numbers (e.g. 'soda_can1' and 'soda_can2', ... for identical-looking soda cans)
 - An object **cannot have the same name** as another under any circumstance.
-- Format: normalized coordinates 0-1000 as integers
+- Format: box_2d is [ymin, xmin, ymax, xmax] as integers normalized to 0-1000, with (0, 0) at the top-left corner of the image
 
 Be very careful to identify objects and name them in a way that's relevant to the task. If the task involves picking up a red apple, make sure that 'red' appears in the name of the apple.
 
@@ -50,7 +50,7 @@ Another example - for the task "place the cup next to the apple" when both are o
 The cup is placed laterally next to the apple. Do NOT use `on(cup, red_apple)` — the apple is a positional reference, not a surface to stack on.
 
 
-Return a single JSON object with this structure (no code fencing):
+Return only a single JSON object with this structure, with no code fencing and no text before or after it:
 {{
     "bboxes": [
         {{"box_2d": [ymin, xmin, ymax, xmax], "label": "object name"}},

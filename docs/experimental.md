@@ -30,7 +30,7 @@ experimental:
 
 This requires cuTAMP 0.0.6 or newer, which provides the predicate. TiPToP checks the installed version on startup and fails with a clear message if it is too old.
 
-Enabling the flag switches Gemini to a prompt that can emit `near` atoms when it translates your instruction, and turns on near-placement handling in the planner.
+Enabling the flag switches Claude to a prompt that can emit `near` atoms when it translates your instruction, and turns on near-placement handling in the planner.
 
 Under the hood this adds cuTAMP's `PlaceNear` operator, defined in [`cutamp/tamp_domain.py`](https://github.com/tiptop-robot/cuTAMP/blob/main/cutamp/tamp_domain.py). It is a normal `Place` plus a `NearPlacement` constraint, so sampling and motion planning are unchanged and the reference object only enters through the cost. That cost is computed in `near_placement_costs` in [`cutamp/cost_function.py`](https://github.com/tiptop-robot/cuTAMP/blob/main/cutamp/cost_function.py): it penalizes the center-to-center xy distance between the object and its reference in one direction only, evaluated at the placement timestep so the reference's pose at that moment is used. The distance threshold is half of each object's largest xy extent plus a fixed gap, so larger objects get a proportionally larger allowance. The constraint counts as satisfied within cuTAMP's default tolerance of 5cm, set by [`default_constraint_to_tol`](https://github.com/tiptop-robot/cuTAMP/blob/main/cutamp/scripts/utils.py).
 

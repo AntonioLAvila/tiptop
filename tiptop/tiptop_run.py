@@ -286,7 +286,7 @@ def create_tamp_environment(
             goal_state.add(Near.ground(movable_label, reference_label))
             _log.info(f"Goal: {movable_label} near {reference_label}")
         else:
-            _log.warning(f"Ignoring unexpected grounded atom from Gemini: {atom}")
+            _log.warning(f"Ignoring unexpected grounded atom from Claude: {atom}")
     if not has_holding:
         goal_state.add(HandEmpty.ground())
 
@@ -322,7 +322,7 @@ def process_scene_geometry(
         xyz_map: World-space XYZ coordinates (H, W, 3)
         rgb_map: RGB image (H, W, 3) in 0-1 range
         masks: Segmentation masks from SAM2
-        bboxes: Bounding boxes from Gemini
+        bboxes: Bounding boxes from Claude
         grasps: Grasp predictions from M2T2
         recgen_meshes: Per-object meshes in world frame (e.g. from RecGen). When provided, replaces the convex-hull path.
 
