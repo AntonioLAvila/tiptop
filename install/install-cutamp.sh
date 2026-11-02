@@ -9,24 +9,26 @@ if [ ! -f "tiptop/__init__.py" ]; then
     exit 1
 fi
 
-REPO_URL="https://github.com/tiptop-robot/cuTAMP.git"
+FORK="AntonioLAvila/cuTAMP"
+REPO_URL="https://github.com/$FORK.git"
+BRANCH="rlg-franka"
 INSTALL_DIR="cutamp"
-REQUIRED_VERSION=$(python -c "
-import re
-m = re.search(r'REQUIRED_CUTAMP_VERSION = \"([^\"]+)\"', open('tiptop/utils.py').read())
-print(m.group(1))
-")
 
-echo "==> Installing cuTAMP v$REQUIRED_VERSION..."
+echo "==> Installing cuTAMP ($FORK@$BRANCH)..."
 
 # Check if directory exists and is a healthy git repo
 should_clone=true
 if [ -d "$INSTALL_DIR" ]; then
     cd "$INSTALL_DIR"
     if git fsck --full &> /dev/null; then
-        echo "Updating existing cuTAMP repository to v$REQUIRED_VERSION..."
-        git fetch --tags
-        git checkout "v$REQUIRED_VERSION"
+        if [[ "$(git remote get-url origin)" != *"$FORK"* ]]; then
+            echo "Pointing origin at $REPO_URL (was $(git remote get-url origin))"
+            git remote set-url origin "$REPO_URL"
+        fi
+        echo "Updating existing cuTAMP repository to origin/$BRANCH..."
+        git fetch origin "$BRANCH"
+        git checkout "$BRANCH"
+        git pull --ff-only origin "$BRANCH"
         should_clone=false
         cd ..
     else
@@ -36,10 +38,10 @@ if [ -d "$INSTALL_DIR" ]; then
     fi
 fi
 
-# Clone at the required version tag
+# Clone the fork's branch
 if [ "$should_clone" = true ]; then
-    echo "Cloning cuTAMP v$REQUIRED_VERSION..."
-    git clone --branch "v$REQUIRED_VERSION" "$REPO_URL" "$INSTALL_DIR"
+    echo "Cloning cuTAMP $BRANCH..."
+    git clone --branch "$BRANCH" "$REPO_URL" "$INSTALL_DIR"
 fi
 
 # Install
@@ -47,4 +49,4 @@ cd "$INSTALL_DIR"
 echo "Installing cuTAMP..."
 pip install -e . --no-build-isolation --no-deps
 cd ..
-echo "✓ cuTAMP v$REQUIRED_VERSION installed successfully"
+echo "✓ cuTAMP $BRANCH installed successfully: $(git -C "$INSTALL_DIR" rev-parse --short HEAD)"

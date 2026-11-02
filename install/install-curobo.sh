@@ -9,7 +9,8 @@ if [ ! -f "tiptop/__init__.py" ]; then
     exit 1
 fi
 
-REPO_URL="https://github.com/williamshen-nz/curobo.git"
+FORK="AntonioLAvila/curobo"
+REPO_URL="https://github.com/$FORK.git"
 INSTALL_DIR="curobo"
 
 echo "==> Installing curobo..."
@@ -23,6 +24,10 @@ if [ -d "$INSTALL_DIR" ]; then
     cd "$INSTALL_DIR"
     if git fsck --full &> /dev/null; then
         echo "✓ curobo repository is healthy"
+        if [[ "$(git remote get-url origin)" != *"$FORK"* ]]; then
+            echo "Pointing origin at $REPO_URL (was $(git remote get-url origin))"
+            git remote set-url origin "$REPO_URL"
+        fi
         should_clone=false
         cd ..
     else

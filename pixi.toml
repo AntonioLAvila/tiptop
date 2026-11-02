@@ -36,7 +36,7 @@ pytest = ">=9.0.2,<10"
 gdown = ">=5.2.1,<6"
 
 # cuRobo additional dependencies
-# derived from: https://github.com/williamshen-nz/curobo/blob/main/setup.cfg
+# derived from: https://github.com/AntonioLAvila/curobo/blob/main/setup.cfg
 pybind11 = "*"
 networkx = "*"
 quaternion = "*"  # a.k.a numpy-quaternion on pypi
@@ -49,7 +49,7 @@ importlib_resources = "*"
 scikit-image = "*"
 
 # cuTAMP additional dependencies
-# derived from: https://github.com/williamshen-nz/cutamp-tiptop/blob/main/pyproject.toml
+# derived from: https://github.com/AntonioLAvila/cuTAMP/blob/rlg-franka/pyproject.toml
 einops = "*"
 h5py = ">=3.15.1,<4"
 msgpack-numpy = ">=0.4.8"  # for numpy array serialization over websocket
