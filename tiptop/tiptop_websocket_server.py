@@ -270,6 +270,7 @@ class TiptopPlanningServer:
                 processed_scene.grasps,
                 self._motion_gen,
                 all_surfaces,
+                experiment_dir=save_dir / "cutamp",
             )
 
             if cutamp_plan is None:
