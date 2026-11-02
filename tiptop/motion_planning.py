@@ -34,27 +34,29 @@ from tiptop.workspace import workspace_cuboids
 _log = logging.getLogger(__name__)
 
 
-def get_ik_solver(world_cfg: WorldConfig, num_particles: int, warmup_iters: int = 8):
-    """Get the IKSolver and warm it up."""
+def get_ik_solver(
+    world_cfg: WorldConfig, num_particles: int, warmup_iters: int = 8, collision_cache: dict[str, int] | None = None
+):
+    """Get the IKSolver and warm it up. `collision_cache` pre-sizes cuRobo's obstacle cache (see get_motion_gen)."""
     if warmup_iters < 0:
         raise ValueError(f"warmup_iters must be non-negative, got {warmup_iters}")
 
     cfg = tiptop_cfg()
     with patch_log_level("curobo", logging.ERROR):
         if cfg.robot.type == "fr3_robotiq":
-            ik_solver = get_fr3_robotiq_ik_solver(world_cfg)
+            ik_solver = get_fr3_robotiq_ik_solver(world_cfg, collision_cache=collision_cache)
             container = load_fr3_robotiq_container(TensorDeviceType())
         elif cfg.robot.type == "fr3":
-            ik_solver = get_fr3_franka_ik_solver(world_cfg)
+            ik_solver = get_fr3_franka_ik_solver(world_cfg, collision_cache=collision_cache)
             container = load_fr3_robotiq_container(TensorDeviceType())
         elif cfg.robot.type == "panda_robotiq":
-            ik_solver = get_panda_robotiq_ik_solver(world_cfg)
+            ik_solver = get_panda_robotiq_ik_solver(world_cfg, collision_cache=collision_cache)
             container = load_panda_robotiq_container(TensorDeviceType())
         elif cfg.robot.type == "panda":
-            ik_solver = get_franka_ik_solver(world_cfg)
+            ik_solver = get_franka_ik_solver(world_cfg, collision_cache=collision_cache)
             container = load_panda_container(TensorDeviceType())
         elif cfg.robot.type == "ur5":
-            ik_solver = get_ur5_ik_solver(world_cfg)
+            ik_solver = get_ur5_ik_solver(world_cfg, collision_cache=collision_cache)
             container = load_ur5_container(TensorDeviceType())
         else:
             raise ValueError(f"Unknown robot type: {cfg.robot.type}")
@@ -79,6 +81,7 @@ def get_motion_gen(
     num_spheres: int | None = None,
     warmup_iters: int = 16,
     use_cuda_graph: bool = True,
+    collision_cache: dict[str, int] | None = None,
 ):
     """Get the motion generator and warm it up.
 
@@ -89,6 +92,10 @@ def get_motion_gen(
             Passed to cuRobo's extra_collision_spheres for the attached_object slot.
         warmup_iters: Number of warmup iterations to run after construction.
         use_cuda_graph: Whether to use CUDA graphs for faster repeated inference.
+        collision_cache: cuRobo obstacle cache to allocate up front, e.g. {"obb": 64, "mesh": 32}. Needed when
+            the world is updated between planning calls with CUDA graphs on: cuRobo recreates its mesh cache
+            whenever a world has more meshes than before, and a recorded CUDA graph then points at freed
+            memory ("CUDA error: an illegal memory access was encountered" in the next IK solve).
     """
     if warmup_iters < 0:
         raise ValueError(f"warmup_iters must be non-negative, got {warmup_iters}")
@@ -116,6 +123,7 @@ def get_motion_gen(
             robot_cfg=robot_cfg,
             world_model=world_cfg,
             use_cuda_graph=use_cuda_graph,
+            collision_cache=collision_cache,
             collision_activation_distance=collision_activation_distance,
             position_threshold=0.01,
             rotation_threshold=0.1,
@@ -161,9 +169,15 @@ def build_curobo_solvers(
         Cuboid(name="table", dims=[0.01, 0.01, 0.01], pose=[99.9, 99.9, 99.9, 1.0, 0.0, 0.0, 0.0]),
     ]
     world_cfg = WorldConfig(cuboid=cuboids)
-    ik_solver = get_ik_solver(world_cfg, num_particles)
+    # Allocated once for every scene these solvers will see (cuTAMP swaps in the detected table and one mesh per
+    # object with update_world): a cache that grows later breaks the recorded CUDA graphs, see get_motion_gen.
+    collision_cache = {"obb": max(64, 4 * len(cuboids)), "mesh": 32}
+    ik_solver = get_ik_solver(world_cfg, num_particles, collision_cache=collision_cache)
     motion_gen = get_motion_gen(
-        world_cfg, collision_activation_distance=collision_activation_distance, num_spheres=num_spheres
+        world_cfg,
+        collision_activation_distance=collision_activation_distance,
+        num_spheres=num_spheres,
+        collision_cache=collision_cache,
     )
     return ik_solver, motion_gen, world_cfg
 
