@@ -15,31 +15,37 @@ tensor_args = TensorDeviceType()
 
 
 def fr3_workspace() -> tuple[Cuboid, ...]:
-    vention_table = Cuboid(
-        "vention",
+    table = Cuboid(
+        "table",
         dims=[0.86, 1.24, 0.7],
         pose=[0.19 - 0.86 / 2, 0.525, -0.35, *unit_quat],
         color=[2, 48, 117],
     )
-    nishanth = Cuboid(
-        "nishanth",
+    FR_column = Cuboid(
+        "FR_column",
         dims=[2.5, 0.25, 1.8],
         pose=[-0.25, -0.55, 0.0, *unit_quat],
         color=[255, 0, 255],
     )
-    ipad = Cuboid(
-        "ipad",
+    FL_column = Cuboid(
+        "FL_column",
         dims=[0.25, 0.3, 0.2],
         pose=[0.05, 0.25, 0.1, *unit_quat],
         color=[255, 0, 0],
     )
-    camera = Cuboid(
-        name="camera",
+    RR_column = Cuboid(
+        name="RR_column",
         dims=[0.36, 0.2, 0.76],
         pose=[0.0, 0.525, 0.76 / 2, *unit_quat],
         color=[0, 87, 217],
     )
-    obstacles = (vention_table, camera, nishanth, ipad)
+    RL_column = Cuboid(
+        name="RL_column",
+        dims=[0.36, 0.2, 0.76],
+        pose=[0.0, 0.525, 0.76 / 2, *unit_quat],
+        color=[0, 87, 217],
+    )
+    obstacles = (table, FR_column, FL_column, RL_column, RR_column)
     return obstacles
 
 
