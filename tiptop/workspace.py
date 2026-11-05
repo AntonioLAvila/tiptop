@@ -50,11 +50,17 @@ def fr3_workspace() -> tuple[Cuboid, ...]:
         pose=[tx / 2 - X_OFFSET, 0.0, -tz / 2 - Z_TABLE_OFFSET + 1.1176, *unit_quat],
         color=[2, 48, 117],
     )
+    wall = Cuboid(
+        'wall',
+        dims=[0.01, 5, 5],
+        pose=[-0.3048 - X_OFFSET, 0, 0, *unit_quat],
+        color=[2, 48, 117]
+    )
     FR_column = _column("FR_column", front=True, left=False, color=[255, 0, 255])
     FL_column = _column("FL_column", front=True, left=True, color=[255, 0, 0])
     RR_column = _column("RR_column", front=False, left=False, color=[0, 87, 217])
     RL_column = _column("RL_column", front=False, left=True, color=[0, 87, 217])
-    return (table, ceiling, FR_column, FL_column, RL_column, RR_column)
+    return (table, ceiling, FR_column, FL_column, RL_column, RR_column, wall)
 
 
 def ur5_workspace() -> tuple[Cuboid, ...]:
