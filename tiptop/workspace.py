@@ -11,7 +11,7 @@ from tiptop.utils import get_robot_rerun
 
 tensor_args = TensorDeviceType()
 
-X_OFFSET = 0.3  # table rear edge is this far behind the robot base
+X_OFFSET = 0.324  # table rear edge is this far behind the robot base
 Z_TABLE_OFFSET = 0.0047625  # table top is this far below the robot base
 
 TABLE_DIMS = (1.2319, 0.7747, 0.02)
