@@ -32,3 +32,5 @@ pyzed*.whl
 
 # claude
 .claude
+
+.vscode

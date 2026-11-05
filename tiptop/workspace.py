@@ -11,42 +11,50 @@ from tiptop.utils import get_robot_rerun
 
 tensor_args = TensorDeviceType()
 
-# The workspace to motion plan against for collisions
+X_OFFSET = 0.3  # table rear edge is this far behind the robot base
+Z_TABLE_OFFSET = 0.0047625  # table top is this far below the robot base
+
+TABLE_DIMS = (1.2319, 0.7747, 0.02)
+TABLE_FRONT_X = TABLE_DIMS[0] - X_OFFSET
+TABLE_REAR_X = -X_OFFSET
+
+COLUMN_DIMS = (0.0762, 0.0381, 1.2)
+COLUMN_FRONT_X = 0.60325 + X_OFFSET
+COLUMN_REAR_X = TABLE_REAR_X + (TABLE_FRONT_X - COLUMN_FRONT_X)
+COLUMN_HALF_Y = 0.34925
+
+
+def _column(name: str, front: bool, left: bool, color: list[int]) -> Cuboid:
+    """Column at the given corner of the table."""
+    dx, dy, dz = COLUMN_DIMS
+    pose = [
+        COLUMN_FRONT_X - dx / 2 if front else COLUMN_REAR_X + dx / 2,
+        (1 if left else -1) * (COLUMN_HALF_Y - dy / 2),
+        dz / 2 - Z_TABLE_OFFSET,
+        *unit_quat,
+    ]
+    return Cuboid(name, dims=list(COLUMN_DIMS), pose=pose, color=color)
 
 
 def fr3_workspace() -> tuple[Cuboid, ...]:
+    tx, _, tz = TABLE_DIMS
     table = Cuboid(
         "table",
-        dims=[0.86, 1.24, 0.7],
-        pose=[0.19 - 0.86 / 2, 0.525, -0.35, *unit_quat],
+        dims=list(TABLE_DIMS),
+        pose=[tx / 2 - X_OFFSET, 0.0, -tz / 2 - Z_TABLE_OFFSET, *unit_quat],
         color=[2, 48, 117],
     )
-    FR_column = Cuboid(
-        "FR_column",
-        dims=[2.5, 0.25, 1.8],
-        pose=[-0.25, -0.55, 0.0, *unit_quat],
-        color=[255, 0, 255],
+    ceiling = Cuboid(
+        "ceiling",
+        dims=list(TABLE_DIMS),
+        pose=[tx / 2 - X_OFFSET, 0.0, -tz / 2 - Z_TABLE_OFFSET + 1.1176, *unit_quat],
+        color=[2, 48, 117],
     )
-    FL_column = Cuboid(
-        "FL_column",
-        dims=[0.25, 0.3, 0.2],
-        pose=[0.05, 0.25, 0.1, *unit_quat],
-        color=[255, 0, 0],
-    )
-    RR_column = Cuboid(
-        name="RR_column",
-        dims=[0.36, 0.2, 0.76],
-        pose=[0.0, 0.525, 0.76 / 2, *unit_quat],
-        color=[0, 87, 217],
-    )
-    RL_column = Cuboid(
-        name="RL_column",
-        dims=[0.36, 0.2, 0.76],
-        pose=[0.0, 0.525, 0.76 / 2, *unit_quat],
-        color=[0, 87, 217],
-    )
-    obstacles = (table, FR_column, FL_column, RL_column, RR_column)
-    return obstacles
+    FR_column = _column("FR_column", front=True, left=False, color=[255, 0, 255])
+    FL_column = _column("FL_column", front=True, left=True, color=[255, 0, 0])
+    RR_column = _column("RR_column", front=False, left=False, color=[0, 87, 217])
+    RL_column = _column("RL_column", front=False, left=True, color=[0, 87, 217])
+    return (table, ceiling, FR_column, FL_column, RL_column, RR_column)
 
 
 def ur5_workspace() -> tuple[Cuboid, ...]:
