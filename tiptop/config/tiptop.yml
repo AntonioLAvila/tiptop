@@ -24,6 +24,20 @@ robot:
   q_capture: [0.14383115793570544, -1.6496692239471344, -0.09040299987201529, -2.670572545930934, -0.12891004397471745, 1.725358803889352, -2.2958850445118215]
   #q_capture: [0.09182040738001353, -1.7596653633613568, -0.07610120523668563, -2.989139779475697, -0.03324042674962227, 2.0085827458795786, 0.7514896069202158]
 
+# == Planning ==
+planning:
+  # How strongly cuRobo IK pulls grasp and placement configurations toward q_home (cuRobo default 0.001).
+  # Breaks the tie between grasps and IK branches that only differ by a wrist rotation.
+  ik_null_space_weight: 1.0
+  # cuTAMP trajectory-length cost between consecutive configurations: multiplier (cuTAMP default 0.001) and
+  # per-joint weights. The roll joints 5 and 7 are weighted up so wrist flips cost more than they travel.
+  traj_length_mult: 0.01
+  traj_length_weights: [1.0, 1.0, 1.0, 1.0, 2.0, 1.0, 2.0]
+  # Particles that satisfy all constraints are motion planned in order of (trajectory-length cost - this * M2T2 grasp
+  # confidence). With the multiplier above, 0.1 of confidence trades against 1 rad of weighted joint travel.
+  # cuTAMP ranks by confidence alone otherwise, which ignores the trajectory-length cost entirely.
+  grasp_confidence_weight: 0.1
+
 # == Camera configurations ==
 # Supported types: zed, realsense
 # ZED cameras support optional resolution and fps settings:

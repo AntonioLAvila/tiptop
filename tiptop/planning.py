@@ -1,5 +1,6 @@
 """Shared planning utilities used by tiptop_run, websocket_server, and tiptop_h5_run."""
 
+import copy
 import json
 import logging
 import time
@@ -15,8 +16,10 @@ from cutamp.cost_reduction import CostReducer
 from cutamp.envs import TAMPEnvironment
 from cutamp.scripts.utils import default_constraint_to_mult, default_constraint_to_tol
 from cutamp.task_planning.constraints import StablePlacement
+from cutamp.task_planning.costs import TrajectoryLength
 from jaxtyping import Float
 
+from tiptop.config import tiptop_cfg
 from tiptop.utils import NumpyEncoder
 
 _log = logging.getLogger(__name__)
@@ -76,6 +79,8 @@ def build_tamp_config(
         enable_visualizer=enable_visualizer,
         coll_sphere_radius=0.008,
         near_placement=near_placement,
+        traj_length_weights=tuple(float(w) for w in tiptop_cfg().planning.traj_length_weights),
+        grasp_confidence_weight=tiptop_cfg().planning.grasp_confidence_weight,
     )
 
 
@@ -93,8 +98,10 @@ def run_planning(
 
     Returns (None, elapsed, failure_reason) if cuTAMP fails to find a plan.
     """
-    constraint_to_tol = default_constraint_to_tol.copy()
-    constraint_to_mult = default_constraint_to_mult.copy()
+    cfg = tiptop_cfg()
+    constraint_to_tol = copy.deepcopy(default_constraint_to_tol)
+    constraint_to_mult = copy.deepcopy(default_constraint_to_mult)
+    constraint_to_mult[TrajectoryLength.type]["traj_length"] = cfg.planning.traj_length_mult
     # Loosen tolerances slightly to enable finding a plan practically
     for surface in all_surfaces:
         constraint_to_tol[StablePlacement.type][f"{surface.name}_in_xy"] = 1e-2
@@ -114,6 +121,7 @@ def run_planning(
         grasps=grasps,
         motion_gen=motion_gen,
         experiment_dir=experiment_dir,
+        q_retract=list(cfg.robot.q_home),
     )
     elapsed = time.perf_counter() - start
     _log.info(f"cuTAMP planning took: {elapsed:.2f}s")

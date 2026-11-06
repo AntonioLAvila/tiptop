@@ -42,21 +42,32 @@ def get_ik_solver(
         raise ValueError(f"warmup_iters must be non-negative, got {warmup_iters}")
 
     cfg = tiptop_cfg()
+    null_space_weight = cfg.planning.ik_null_space_weight
     with patch_log_level("curobo", logging.ERROR):
         if cfg.robot.type == "fr3_robotiq":
-            ik_solver = get_fr3_robotiq_ik_solver(world_cfg, collision_cache=collision_cache)
+            ik_solver = get_fr3_robotiq_ik_solver(
+                world_cfg, collision_cache=collision_cache, null_space_weight=null_space_weight
+            )
             container = load_fr3_robotiq_container(TensorDeviceType())
         elif cfg.robot.type == "fr3":
-            ik_solver = get_fr3_franka_ik_solver(world_cfg, collision_cache=collision_cache)
+            ik_solver = get_fr3_franka_ik_solver(
+                world_cfg, collision_cache=collision_cache, null_space_weight=null_space_weight
+            )
             container = load_fr3_robotiq_container(TensorDeviceType())
         elif cfg.robot.type == "panda_robotiq":
-            ik_solver = get_panda_robotiq_ik_solver(world_cfg, collision_cache=collision_cache)
+            ik_solver = get_panda_robotiq_ik_solver(
+                world_cfg, collision_cache=collision_cache, null_space_weight=null_space_weight
+            )
             container = load_panda_robotiq_container(TensorDeviceType())
         elif cfg.robot.type == "panda":
-            ik_solver = get_franka_ik_solver(world_cfg, collision_cache=collision_cache)
+            ik_solver = get_franka_ik_solver(
+                world_cfg, collision_cache=collision_cache, null_space_weight=null_space_weight
+            )
             container = load_panda_container(TensorDeviceType())
         elif cfg.robot.type == "ur5":
-            ik_solver = get_ur5_ik_solver(world_cfg, collision_cache=collision_cache)
+            ik_solver = get_ur5_ik_solver(
+                world_cfg, collision_cache=collision_cache, null_space_weight=null_space_weight
+            )
             container = load_ur5_container(TensorDeviceType())
         else:
             raise ValueError(f"Unknown robot type: {cfg.robot.type}")
@@ -67,7 +78,8 @@ def get_ik_solver(
         for _ in range(warmup_iters):
             q = sample_between_bounds(num_particles, bounds=container.joint_limits)
             goal_pose = container.kin_model.get_state(q).ee_pose
-            _ = ik_solver.solve_batch(goal_pose)
+            # cuTAMP solves with a retract config, and cuRobo cannot switch goal types once its CUDA graph is captured
+            _ = ik_solver.solve_batch(goal_pose, retract_config=q, seed_config=q[:, None])
         torch.cuda.synchronize()
         warmup_dur = time.perf_counter() - warmup_start
         _log.debug(f"Warming up IKSolver took {warmup_dur:.2f}s")
